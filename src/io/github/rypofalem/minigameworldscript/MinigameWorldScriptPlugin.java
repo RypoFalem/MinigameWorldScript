@@ -22,79 +22,84 @@ public class MinigameWorldScriptPlugin  extends JavaPlugin implements CommandExe
 	MultiverseCore mvcore;
 
 	public void onEnable(){
-		this.getCommand("mgwc").setExecutor(this);
+		this.getCommand("mgws").setExecutor(this);
 		mvcore = (MultiverseCore)Bukkit.getPluginManager().getPlugin("Multiverse-Core");
-		if(mvcore == null || !mvcore.isEnabled()){
-			Bukkit.getLogger().info("Multiverse-Core not found. Disabling MinigameWorldScript");
-			this.getPluginLoader().disablePlugin(this);
-		}
 	}
 
 	///mgws <playername> <worldname> <minigame> [environment]
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
-		if(cmd.getName().equalsIgnoreCase("mgwc") && sender instanceof Player){
-			Player player = (Player) sender;
-			if(args.length <3){
-				errorMessage(player,"Not enough arguments!");
-				return false;
-			}
-			if(args.length >4){
-				errorMessage(player,"Too many arguments!");
-				return false;
-			}
-			String playername = args[0];
-			String worldname = args[1];
-			String minigame = args[2];
-			Environment environment = (args.length == 4) ? validateWorldType(args[3]) : Environment.NORMAL;
-			if(Bukkit.getPlayerExact(playername) == null){ //TODO: replace with server-specific code (check players that have logged into the server at least once)
-				errorMessage(player, "Unkown player: \"" + playername + "\"");
-				return false; 
-			}
-			if(worldExists(worldname)){ 
-				errorMessage(player, "The world \"" + worldname + "\" already exists");
-				return false; 
-			}
-			if(false){ //todo: check if minigame name is valid
-				errorMessage(player, "Invalid minigame name \"" + minigame + "\".");
-				return false; 
-			}
-			if(environment == null){
-				errorMessage(player, "The environment \"" + args[3] + "\" is invalid");
-				return false; 
-			}
-			if(!mvcore.getMVWorldManager().addWorld(worldname, environment, "01", WorldType.NORMAL, false, "VoidGenerator")){
-				errorMessage(player, "World creation failed :X");
-				return false;
-			}
-			if(mvcore.getMVWorldManager().isMVWorld(worldname)){
-				MultiverseWorld mvWorld = mvcore.getMVWorldManager().getMVWorld(worldname);
-				World bukkitWorld = mvWorld.getCBWorld();
-				bukkitWorld.getBlockAt(0, 65, 0).setType(Material.AIR);
-				bukkitWorld.getBlockAt(255, 65, 255).setType(Material.GLASS);
-				mvWorld.setSpawnLocation(new Location(bukkitWorld, 255.5, 66, 255.5));
-				mvWorld.setGameMode(GameMode.CREATIVE);
-				mvWorld.setDifficulty(Difficulty.PEACEFUL);
-			}else {
-				errorMessage(player, "World was created but cannot be found");
-				return false;
-			}
-			setPerm("group Builder set multiverse.access." + worldname);				// /perm group Builder set multiverse.access.WorldName
-			setPerm("group Builder set " + worldname + ":worldedit.*");					// /perm group Builder set WorldName:worldedit.*
-			setPerm("group Builder set " + worldname + ":minecraft.command.save-all");	// /perm group Builder set WorldName:minecraft.command.save-all
-			setPerm("group Builder set " + worldname + ":" + minigame + ".test");		// /perm group Builder set WorldName:colorfall.test
-			setPerm("player "+ playername +" addgroup Builder");						// /perm player PlayerName addgroup Builder
+		if(args.length <3){
+			errorMessage(sender,"Not enough arguments!");
+			return false;
+		}
+		if(args.length >4){
+			errorMessage(sender,"Too many arguments!");
+			return false;
+		}
+		String playername = args[0];
+		String worldname = args[1];
+		String minigame = args[2];
+		Environment environment = (args.length == 4) ? validateWorldType(args[3]) : Environment.NORMAL;
+		
+		//TODO: replace with server-specific code (check players that have logged into the server at least once)
+		if(Bukkit.getPlayerExact(playername) == null){ 
+			errorMessage(sender, "Unkown player: \"" + playername + "\"");
+			return false; 
+		}
+		playername = Bukkit.getPlayerExact(playername).getName(); //correct capitalization for prettiness
+		if(worldExists(worldname)){ 
+			errorMessage(sender, "The world \"" + worldname + "\" already exists");
+			return false; 
+		}
+
+		//todo: check if minigame name is valid
+		if(false){
+			errorMessage(sender, "Invalid minigame name \"" + minigame + "\".");
+			return false; 
+		}
+		if(environment == null){
+			errorMessage(sender, "The environment \"" + args[3] + "\" is invalid");
+			return false; 
+		}
+		if(!mvcore.getMVWorldManager().addWorld(worldname, environment, "01", WorldType.NORMAL, false, "VoidGenerator")){
+			errorMessage(sender, "World creation failed.");
 			return true;
 		}
-		return false;
+		if(mvcore.getMVWorldManager().isMVWorld(worldname)){
+			MultiverseWorld mvWorld = mvcore.getMVWorldManager().getMVWorld(worldname);
+			World bukkitWorld = mvWorld.getCBWorld();
+			bukkitWorld.getBlockAt(0, 65, 0).setType(Material.AIR);
+			bukkitWorld.getBlockAt(255, 65, 255).setType(Material.GLASS);
+			mvWorld.setSpawnLocation(new Location(bukkitWorld, 255.5, 66, 255.5));
+			mvWorld.setGameMode(GameMode.CREATIVE);
+			mvWorld.setDifficulty(Difficulty.PEACEFUL);
+		}else {
+			errorMessage(sender, "World was created but cannot be found. I am just as confused as you are.");
+			return true;
+		}
+		
+		// /perm group Builder set multiverse.access.WorldName
+		// /perm group Builder set WorldName:worldedit.*
+		// /perm group Builder set WorldName:minecraft.command.save-all
+		// /perm group Builder set WorldName:colorfall.test
+		// /perm player PlayerName addgroup Builder
+		setPerm("group Builder set multiverse.access." + worldname);
+		setPerm("group Builder set " + worldname + ":worldedit.*");	
+		setPerm("group Builder set " + worldname + ":minecraft.command.save-all");
+		setPerm("group Builder set " + worldname + ":" + minigame + ".test");
+		setPerm("player "+ playername +" addgroup Builder");
+		sender.sendMessage(ChatColor.DARK_GREEN + "Successfully created a " + minigame + " world for " + playername + " called \"" + worldname + "\"");
+		return true;
 	}
 
 	private boolean setPerm(String command){
 		return Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "perm "+ command);
 	}
 
-	private void errorMessage(Player player, String message){
-		if(player != null && player.isOnline() && message!= null){
-			player.sendMessage(ChatColor.RED + message);
+	private void errorMessage(CommandSender sender, String message){
+		if(sender != null && message!= null){
+			if(sender instanceof Player && !((Player)sender).isOnline()) return;
+			sender.sendMessage(ChatColor.RED + message);
 		}
 	}
 

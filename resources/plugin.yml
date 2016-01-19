@@ -6,11 +6,11 @@ author: RypoFalem
 description: Runs some commands to make a minigame world.
 depend: [Multiverse-Core]
 commands:
-  mgwc:
+  mgws:
     description: Creates a new minigames-ready world
-    usage: §c /mgwc <playername> <worldname> <minigame> [environment]
-    permissions: mgwc.use
+    usage: §c /mgws <playername> <worldname> <minigame> [environment]
+    permissions: mgws.use
 permissions:
-  mgwc.use:
+  mgws.use:
     description: Can use the script
     default: op
