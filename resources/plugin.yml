@@ -1,0 +1,16 @@
+name: MinigameWorldScript
+main: io.github.rypofalem.minigameworldscript.MinigameWorldScriptPlugin
+version: 1.0
+website: rypofalem.github.io
+author: RypoFalem
+description: Runs some commands to make a minigame world.
+depend: [Multiverse-Core]
+commands:
+  mgwc:
+    description: Creates a new minigames-ready world
+    usage: §c /mgwc <playername> <worldname> <minigame> [environment]
+    permissions: mgwc.use
+permissions:
+  mgwc.use:
+    description: Can use the script
+    default: op
