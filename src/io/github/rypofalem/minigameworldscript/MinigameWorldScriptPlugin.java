@@ -1,5 +1,7 @@
 package io.github.rypofalem.minigameworldscript;
 
+import java.util.ArrayList;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
@@ -15,18 +17,22 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.winthier.playercache.PlayerCache;
+
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 
 public class MinigameWorldScriptPlugin  extends JavaPlugin implements CommandExecutor {
 	MultiverseCore mvcore;
+	
 
 	public void onEnable(){
+		this.saveDefaultConfig();
 		this.getCommand("mgws").setExecutor(this);
 		mvcore = (MultiverseCore)Bukkit.getPluginManager().getPlugin("Multiverse-Core");
 	}
 
-	///mgws <playername> <worldname> <minigame> [environment]
+	// /mgws <playername> <worldname> <minigame> [environment]
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
 		if(args.length <3){
 			errorMessage(sender,"Not enough arguments!");
@@ -41,20 +47,18 @@ public class MinigameWorldScriptPlugin  extends JavaPlugin implements CommandExe
 		String minigame = args[2];
 		Environment environment = (args.length == 4) ? validateWorldType(args[3]) : Environment.NORMAL;
 		
-		//TODO: replace with server-specific code (check players that have logged into the server at least once)
-		if(Bukkit.getPlayerExact(playername) == null){ 
+		PlayerCache cachedPlayer = PlayerCache.forName(playername);
+		if(cachedPlayer == null){ 
 			errorMessage(sender, "Unkown player: \"" + playername + "\"");
 			return false; 
 		}
-		playername = Bukkit.getPlayerExact(playername).getName(); //correct capitalization for prettiness
+		playername = cachedPlayer.getName();
 		if(worldExists(worldname)){ 
 			errorMessage(sender, "The world \"" + worldname + "\" already exists");
 			return false; 
 		}
-
-		//todo: check if minigame name is valid
-		if(false){
-			errorMessage(sender, "Invalid minigame name \"" + minigame + "\".");
+		if(!isMinigame(minigame)){
+			errorMessage(sender, "Invalid minigame name \"" + minigame + "\". Is the it listed in the configuration?");
 			return false; 
 		}
 		if(environment == null){
@@ -90,6 +94,19 @@ public class MinigameWorldScriptPlugin  extends JavaPlugin implements CommandExe
 		setPerm("player "+ playername +" addgroup Builder");
 		sender.sendMessage(ChatColor.DARK_GREEN + "Successfully created a " + minigame + " world for " + playername + " called \"" + worldname + "\"");
 		return true;
+	}
+
+	private boolean isMinigame(String minigame) {
+		ArrayList<String> minigames;
+		try{
+			reloadConfig();
+			minigames = (ArrayList<String>) getConfig().getStringList("minigames");
+			if (minigames == null) return false;
+		}catch(Exception e){return false;}
+		for(String mg : minigames){
+			if(minigame.equalsIgnoreCase(mg)) return true;
+		}
+		return false;
 	}
 
 	private boolean setPerm(String command){

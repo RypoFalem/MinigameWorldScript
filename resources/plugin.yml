@@ -4,7 +4,7 @@ version: 1.0
 website: rypofalem.github.io
 author: RypoFalem
 description: Runs some commands to make a minigame world.
-depend: [Multiverse-Core]
+depend: [Multiverse-Core, zPermissions, PlayerCache]
 commands:
   mgws:
     description: Creates a new minigames-ready world
