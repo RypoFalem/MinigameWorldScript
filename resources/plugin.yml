@@ -9,7 +9,7 @@ commands:
   mgws:
     description: Creates a new minigames-ready world
     usage: §c /mgws <playername> <worldname> <minigame> [environment]
-    permissions: mgws.use
+    permission: mgws.use
 permissions:
   mgws.use:
     description: Can use the script

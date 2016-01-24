@@ -34,6 +34,10 @@ public class MinigameWorldScriptPlugin  extends JavaPlugin implements CommandExe
 
 	// /mgws <playername> <worldname> <minigame> [environment]
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
+		if(!sender.hasPermission("mgws.use")){
+			errorMessage(sender, "This context is unreachable.");
+			return true;
+		}
 		if(args.length <3){
 			errorMessage(sender,"Not enough arguments!");
 			return false;
