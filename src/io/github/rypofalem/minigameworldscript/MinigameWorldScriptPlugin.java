@@ -97,6 +97,20 @@ public class MinigameWorldScriptPlugin  extends JavaPlugin implements CommandExe
 		setPerm("group Builder set " + worldname + ":" + minigame + ".test");
 		setPerm("player "+ playername +" addgroup Builder");
 		sender.sendMessage(ChatColor.DARK_GREEN + "Successfully created a " + minigame + " world for " + playername + " called \"" + worldname + "\"");
+		if(sender instanceof Player){
+			Player playerSender = (Player)sender;
+			//unsanitized input
+			String click = String.format("[\"\",{\"text\":\"[Click here]\",\"color\":\"green\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/wtp %s\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"/wtp %s\"}]}}},"
+					+ "{\"text\":\" to teleport to the new minigame world.\",\"color\":\"dark_green\"}]",worldname, worldname);
+			tellRaw(playerSender, click);
+		}
+		Player player = Bukkit.getPlayer(PlayerCache.uuidForName(playername));
+		if(!player.isOnline()) return true;
+		if(player == sender) return true;
+		//unsanitized input
+		String click = String.format("[\"\",{\"text\":\"[Click here]\",\"color\":\"green\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/wtp %s\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"/wtp %s\"}]}}},"
+				+ "{\"text\":\" to teleport to the new minigame world.\",\"color\":\"dark_green\"}]", worldname, worldname);
+		tellRaw(player, click);
 		return true;
 	}
 
@@ -115,6 +129,10 @@ public class MinigameWorldScriptPlugin  extends JavaPlugin implements CommandExe
 
 	private boolean setPerm(String command){
 		return Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "perm "+ command);
+	}
+	
+	private boolean tellRaw(Player player, String message){
+		return Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + message);
 	}
 
 	private void errorMessage(CommandSender sender, String message){
